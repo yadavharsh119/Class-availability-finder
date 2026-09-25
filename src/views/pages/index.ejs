@@ -1,0 +1,86 @@
+<%- include('../partials/header') %>
+
+<% if (notice) { %>
+  <p class="notice"><%= notice %></p>
+<% } %>
+<% if (errors.length > 0) { %>
+  <div class="errors">
+    <ul>
+      <% errors.forEach(function (message) { %>
+        <li><%= message %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<h2>Classrooms</h2>
+
+<form class="search-box" method="GET" action="/">
+  <label for="search">Search by room or building</label>
+  <div class="search-row">
+    <input id="search" name="search" value="<%= search %>" placeholder="e.g. 101 or Main Block">
+    <button type="submit">Search</button>
+    <% if (search) { %>
+      <a class="search-clear" href="/">Clear</a>
+    <% } %>
+  </div>
+</form>
+
+<% if (search && classrooms.length === 0) { %>
+  <p class="no-results">No classrooms match "<%= search %>".</p>
+<% } %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Room</th>
+      <th>Building</th>
+      <th>Capacity</th>
+      <th>Time Slot</th>
+      <th>Availability</th>
+      <th>Update</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% classrooms.forEach(function (room) { %>
+      <tr>
+        <td><%= room.roomNumber %></td>
+        <td><%= room.building %></td>
+        <td><%= room.capacity %></td>
+        <td><%= room.timeSlot %></td>
+        <td class="status-<%= room.availability %>"><%= room.availability %></td>
+        <td>
+          <form class="inline" method="POST" action="/classrooms/<%= room.id %>/availability">
+            <select name="availability">
+              <% statuses.forEach(function (status) { %>
+                <option value="<%= status %>" <%= status === room.availability ? 'selected' : '' %>><%= status %></option>
+              <% }); %>
+            </select>
+            <button type="submit">Set</button>
+          </form>
+        </td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<fieldset>
+  <legend>Add a classroom</legend>
+  <form method="POST" action="/classrooms">
+    <label for="roomNumber">Room number</label>
+    <input id="roomNumber" name="roomNumber" required maxlength="20" placeholder="e.g. CS-101">
+
+    <label for="building">Building</label>
+    <input id="building" name="building" required maxlength="60" placeholder="e.g. Main Block">
+
+    <label for="capacity">Capacity</label>
+    <input id="capacity" name="capacity" type="number" min="1" max="500" required placeholder="e.g. 60">
+
+    <label for="timeSlot">Time slot</label>
+    <input id="timeSlot" name="timeSlot" required pattern="\d{2}:\d{2}-\d{2}:\d{2}" placeholder="HH:MM-HH:MM e.g. 09:00-10:30">
+
+    <button type="submit">Add classroom</button>
+  </form>
+</fieldset>
+
+<%- include('../partials/footer', { commitId }) %>
