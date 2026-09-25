@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
 
 <% if (notice) { %>
-  <p class="notice"><%= notice %></p>
+  <div class="notice">&#10003; <%= notice %></div>
 <% } %>
 <% if (errors.length > 0) { %>
   <div class="errors">
@@ -13,85 +13,151 @@
   </div>
 <% } %>
 
-<h2>Classrooms</h2>
+<%
+  var totalClassrooms = classrooms.length;
+  var availableCount = 0;
+  var occupiedCount = 0;
+  var maintenanceCount = 0;
+  classrooms.forEach(function(room) {
+    if (room.availability === 'available') availableCount++;
+    else if (room.availability === 'occupied') occupiedCount++;
+    else if (room.availability === 'maintenance') maintenanceCount++;
+  });
+%>
 
-<form class="search-box" method="GET" action="/">
-  <div class="search-row">
-    <label for="search">Room / Building</label>
-    <input id="search" name="search" value="<%= search %>" placeholder="e.g. 101 or Main Block">
+<!-- Stats row -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Total Classrooms</div>
+    <div class="stat-value"><%= totalClassrooms %></div>
   </div>
-  <div class="search-row">
+  <div class="stat-card">
+    <div class="stat-label">Available</div>
+    <div class="stat-value available"><%= availableCount %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Occupied</div>
+    <div class="stat-value occupied"><%= occupiedCount %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Maintenance</div>
+    <div class="stat-value maintenance"><%= maintenanceCount %></div>
+  </div>
+</div>
+
+<!-- Search and filter bar -->
+<form class="filter-bar search-box" method="GET" action="/">
+  <div class="filter-group">
+    <label for="search">Search</label>
+    <input id="search" name="search" value="<%= search %>" placeholder="Room number or building name...">
+  </div>
+  <div class="filter-group">
     <label for="availability">Availability</label>
     <select id="availability" name="availability">
-      <option value="">All</option>
+      <option value="">All statuses</option>
       <% statuses.forEach(function (status) { %>
-        <option value="<%= status %>" <%= status === availability ? 'selected' : '' %>><%= status %></option>
+        <option value="<%= status %>" <%= status === availability ? 'selected' : '' %>><%= status.charAt(0).toUpperCase() + status.slice(1) %></option>
       <% }); %>
     </select>
   </div>
-  <div class="search-row">
-    <button type="submit">Filter</button>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
     <% if (search || availability) { %>
-      <a class="search-clear" href="/">Clear</a>
+      <a class="btn btn-ghost" href="/">Clear</a>
     <% } %>
   </div>
 </form>
 
+<!-- Classroom table -->
+<div class="section-header">
+  <div>
+    <span class="section-title">Classrooms</span>
+    <% if (search || availability) { %>
+      <span class="section-count"> &mdash; <%= classrooms.length %> result<%= classrooms.length !== 1 ? 's' : '' %></span>
+    <% } %>
+  </div>
+</div>
+
 <% if ((search || availability) && classrooms.length === 0) { %>
-  <p class="no-results">No classrooms match your filters.</p>
+  <div class="no-results">
+    <div class="no-results-icon">&#128269;</div>
+    <div class="no-results-text">No classrooms match your filters</div>
+    <div class="no-results-sub">Try adjusting your search or availability filter</div>
+  </div>
+<% } else { %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Building</th>
+          <th>Capacity</th>
+          <th>Time Slot</th>
+          <th>Status</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% classrooms.forEach(function (room) { %>
+          <tr>
+            <td class="room-name"><%= room.roomNumber %></td>
+            <td class="building-name"><%= room.building %></td>
+            <td><%= room.capacity %></td>
+            <td><span class="time-slot"><%= room.timeSlot %></span></td>
+            <td>
+              <span class="badge badge-<%= room.availability %>">
+                <span class="badge-dot"></span>
+                <%= room.availability %>
+              </span>
+            </td>
+            <td>
+              <form class="inline-form" method="POST" action="/classrooms/<%= room.id %>/availability">
+                <select name="availability">
+                  <% statuses.forEach(function (status) { %>
+                    <option value="<%= status %>" <%= status === room.availability ? 'selected' : '' %>><%= status.charAt(0).toUpperCase() + status.slice(1) %></option>
+                  <% }); %>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Set</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
 <% } %>
 
-<table>
-  <thead>
-    <tr>
-      <th>Room</th>
-      <th>Building</th>
-      <th>Capacity</th>
-      <th>Time Slot</th>
-      <th>Availability</th>
-      <th>Update</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% classrooms.forEach(function (room) { %>
-      <tr>
-        <td><%= room.roomNumber %></td>
-        <td><%= room.building %></td>
-        <td><%= room.capacity %></td>
-        <td><%= room.timeSlot %></td>
-        <td class="status-<%= room.availability %>"><%= room.availability %></td>
-        <td>
-          <form class="inline" method="POST" action="/classrooms/<%= room.id %>/availability">
-            <select name="availability">
-              <% statuses.forEach(function (status) { %>
-                <option value="<%= status %>" <%= status === room.availability ? 'selected' : '' %>><%= status %></option>
-              <% }); %>
-            </select>
-            <button type="submit">Set</button>
-          </form>
-        </td>
-      </tr>
-    <% }); %>
-  </tbody>
-</table>
-
-<fieldset>
-  <legend>Add a classroom</legend>
-  <form method="POST" action="/classrooms">
-    <label for="roomNumber">Room number</label>
-    <input id="roomNumber" name="roomNumber" required maxlength="20" placeholder="e.g. CS-101">
-
-    <label for="building">Building</label>
-    <input id="building" name="building" required maxlength="60" placeholder="e.g. Main Block">
-
-    <label for="capacity">Capacity</label>
-    <input id="capacity" name="capacity" type="number" min="1" max="500" required placeholder="e.g. 60">
-
-    <label for="timeSlot">Time slot</label>
-    <input id="timeSlot" name="timeSlot" required pattern="\d{2}:\d{2}-\d{2}:\d{2}" placeholder="HH:MM-HH:MM e.g. 09:00-10:30">
-
-    <button type="submit">Add classroom</button>
-  </form>
-</fieldset>
+<!-- Add classroom form -->
+<div class="add-card">
+  <div class="add-card-header">
+    <span>&#10133;</span>
+    <h3>Add a Classroom</h3>
+  </div>
+  <div class="add-card-body">
+    <form method="POST" action="/classrooms">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="roomNumber">Room Number</label>
+          <input id="roomNumber" name="roomNumber" required maxlength="20" placeholder="e.g. CS-101">
+        </div>
+        <div class="form-group">
+          <label for="building">Building</label>
+          <input id="building" name="building" required maxlength="60" placeholder="e.g. Main Block">
+        </div>
+        <div class="form-group">
+          <label for="capacity">Capacity</label>
+          <input id="capacity" name="capacity" type="number" min="1" max="500" required placeholder="e.g. 60">
+        </div>
+        <div class="form-group">
+          <label for="timeSlot">Time Slot</label>
+          <input id="timeSlot" name="timeSlot" required pattern="\d{2}:\d{2}-\d{2}:\d{2}" placeholder="09:00-10:30">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Classroom</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <%- include('../partials/footer', { commitId }) %>
