@@ -7,13 +7,13 @@ availability per time slot. Data is kept in an in-memory store (resets on restar
 
 ## Features (Phase 1)
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /` | Homepage: classroom list, add-classroom form, availability update |
-| `POST /classrooms` | Add a classroom (validated) |
-| `POST /classrooms/:id/availability` | Change a classroom's availability status |
-| `GET /api/classrooms` | All classrooms as JSON |
-| `GET /health` | `{"status":"ok"}` health check |
+| Endpoint                            | Purpose                                                           |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `GET /`                             | Homepage: classroom list, add-classroom form, availability update |
+| `POST /classrooms`                  | Add a classroom (validated)                                       |
+| `POST /classrooms/:id/availability` | Change a classroom's availability status                          |
+| `GET /api/classrooms`               | All classrooms as JSON                                            |
+| `GET /health`                       | `{"status":"ok"}` health check                                    |
 
 Availability statuses: `available`, `occupied`, `maintenance`.
 The page footer shows the first 7 characters of `RENDER_GIT_COMMIT` (falls back to `GIT_SHA`, then `local`).
@@ -72,3 +72,4 @@ test/app.test.js           # node:test integration tests
 ## Later phases
 
 Docker, GitHub Actions CI, and Render deployment will be added on top of this foundation.
+Automatic deplpyment test
