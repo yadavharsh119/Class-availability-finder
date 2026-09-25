@@ -178,5 +178,56 @@ test('GET /?search= shows "no classrooms match" when nothing matches', async (t)
   assert.strictEqual(res.status, 200);
   const html = await res.text();
   assert.match(html, /No classrooms match/);
-  assert.match(html, /NONEXISTENT/);
+});
+
+test('GET /?availability=available filters to available classrooms only', async (t) => {
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/?availability=available`);
+  assert.strictEqual(res.status, 200);
+  const html = await res.text();
+  assert.match(html, />101</);
+  assert.match(html, />CS-301</);
+  assert.doesNotMatch(html, />204</);
+  assert.doesNotMatch(html, />Lab-2</);
+});
+
+test('GET /?availability=occupied filters to occupied classrooms only', async (t) => {
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/?availability=occupied`);
+  assert.strictEqual(res.status, 200);
+  const html = await res.text();
+  assert.match(html, />204</);
+  assert.doesNotMatch(html, />101</);
+  assert.doesNotMatch(html, />CS-301</);
+  assert.doesNotMatch(html, />Lab-2</);
+});
+
+test('GET /?availability=maintenance filters to maintenance classrooms only', async (t) => {
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/?availability=maintenance`);
+  assert.strictEqual(res.status, 200);
+  const html = await res.text();
+  assert.match(html, />Lab-2</);
+  assert.doesNotMatch(html, />101</);
+  assert.doesNotMatch(html, />204</);
+  assert.doesNotMatch(html, />CS-301</);
+});
+
+test('GET / combines availability filter with room/building search', async (t) => {
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/?search=Tech&availability=available`);
+  assert.strictEqual(res.status, 200);
+  const html = await res.text();
+  assert.match(html, /CS-301/);
+  assert.doesNotMatch(html, /Lab-2/);
+  assert.doesNotMatch(html, />101</);
+  assert.doesNotMatch(html, />204</);
 });

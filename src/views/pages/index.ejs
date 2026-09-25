@@ -16,18 +16,29 @@
 <h2>Classrooms</h2>
 
 <form class="search-box" method="GET" action="/">
-  <label for="search">Search by room or building</label>
   <div class="search-row">
+    <label for="search">Room / Building</label>
     <input id="search" name="search" value="<%= search %>" placeholder="e.g. 101 or Main Block">
-    <button type="submit">Search</button>
-    <% if (search) { %>
+  </div>
+  <div class="search-row">
+    <label for="availability">Availability</label>
+    <select id="availability" name="availability">
+      <option value="">All</option>
+      <% statuses.forEach(function (status) { %>
+        <option value="<%= status %>" <%= status === availability ? 'selected' : '' %>><%= status %></option>
+      <% }); %>
+    </select>
+  </div>
+  <div class="search-row">
+    <button type="submit">Filter</button>
+    <% if (search || availability) { %>
       <a class="search-clear" href="/">Clear</a>
     <% } %>
   </div>
 </form>
 
-<% if (search && classrooms.length === 0) { %>
-  <p class="no-results">No classrooms match "<%= search %>".</p>
+<% if ((search || availability) && classrooms.length === 0) { %>
+  <p class="no-results">No classrooms match your filters.</p>
 <% } %>
 
 <table>

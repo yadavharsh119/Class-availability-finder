@@ -9,14 +9,22 @@ function pagesRouter() {
 
   router.get('/', (req, res) => {
     const search = (req.query.search || '').trim();
-    const allClassrooms = req.store.list();
-    const classrooms = search
-      ? allClassrooms.filter((room) => {
-          const q = search.toLowerCase();
-          return room.roomNumber.toLowerCase().includes(q)
-            || room.building.toLowerCase().includes(q);
-        })
-      : allClassrooms;
+    const availability = req.query.availability || '';
+    const validAvailability = AVAILABILITY_STATUSES.includes(availability) ? availability : '';
+
+    let classrooms = req.store.list();
+
+    if (search) {
+      const q = search.toLowerCase();
+      classrooms = classrooms.filter((room) =>
+        room.roomNumber.toLowerCase().includes(q)
+        || room.building.toLowerCase().includes(q),
+      );
+    }
+
+    if (validAvailability) {
+      classrooms = classrooms.filter((room) => room.availability === validAvailability);
+    }
 
     res.render('pages/index', {
       classrooms,
@@ -24,6 +32,7 @@ function pagesRouter() {
       notice: req.query.notice || '',
       errors: (req.query.error || '').split('|').filter(Boolean),
       search,
+      availability: validAvailability,
       commitId: req.commitId,
     });
   });
