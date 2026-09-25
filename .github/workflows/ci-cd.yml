@@ -23,6 +23,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Intentional failure (temporary)
+        run: exit 1
 
   docker-smoke:
     name: Docker Build & Smoke Test
