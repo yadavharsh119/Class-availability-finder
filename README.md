@@ -1,75 +1,129 @@
 # Classroom Availability Finder
 
-Individual college project for a Cloud Computing & DevOps assessment — **Phase 1: backend foundation**.
+A Cloud Computing & DevOps project that allows users to find classrooms by building, room number, and availability status, and manage classroom availability across time slots.
 
-A minimal Node.js + Express + EJS web app that lists classrooms and lets you track their
-availability per time slot. Data is kept in an in-memory store (resets on restart).
+## Features
 
-## Features (Phase 1)
+- **Classroom Management:** Add classrooms with room number, building, capacity, and time slot.
+- **Availability Tracking:** Update classroom status to `available`, `occupied`, or `maintenance`.
+- **Search and Filtering:** Search by room number or building and filter by availability.
+- **Dashboard:** View classroom totals and availability statistics.
+- **Health Check:** Monitor application health through `/health`.
+- **Running Commit ID:** Display the deployed Git commit ID in the footer.
 
-| Endpoint                            | Purpose                                                           |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `GET /`                             | Homepage: classroom list, add-classroom form, availability update |
-| `POST /classrooms`                  | Add a classroom (validated)                                       |
-| `POST /classrooms/:id/availability` | Change a classroom's availability status                          |
-| `GET /api/classrooms`               | All classrooms as JSON                                            |
-| `GET /health`                       | `{"status":"ok"}` health check                                    |
+## Tech Stack
 
-Availability statuses: `available`, `occupied`, `maintenance`.
-The page footer shows the first 7 characters of `RENDER_GIT_COMMIT` (falls back to `GIT_SHA`, then `local`).
+- Node.js 22
+- Express.js
+- EJS
+- HTML and CSS
+- Docker
+- GitHub Actions
+- Render
+
+## Architecture
+
+The application uses a Node.js and Express backend with EJS templates for server-rendered pages.
+
+Classroom data is stored in an in-memory data store and resets when the server restarts.
+
+## API Endpoints
+
+| Method | Endpoint                       | Purpose                          |
+| ------ | ------------------------------ | -------------------------------- |
+| GET    | `/`                            | Render the classroom dashboard   |
+| POST   | `/classrooms`                  | Add a classroom                  |
+| POST   | `/classrooms/:id/availability` | Update classroom availability    |
+| GET    | `/api/classrooms`              | Return classroom data as JSON    |
+| GET    | `/health`                      | Return application health status |
+
+## CI/CD Pipeline
+
+GitHub Actions automates quality checks for the project.
+
+The workflow is defined in `.github/workflows/ci-cd.yml`.
+
+The pipeline includes:
+
+1. Install dependencies using `npm ci`.
+2. Run ESLint.
+3. Execute automated tests.
+4. Build the Docker image.
+5. Start the container and perform a health check.
+
+The workflow runs on pushes to `main` and pull requests targeting `main`.
+
+## Deployment
+
+The application is deployed on Render.
+
+The footer displays the first seven characters of the deployed commit ID using `RENDER_GIT_COMMIT`, with `GIT_SHA` and `local` as fallbacks.
 
 ## Requirements
 
-- Node.js 22 or newer (uses the built-in `node:test` runner)
+- Node.js 22 or newer
+- npm
+- Docker (for container testing)
 
 ## Setup
 
 ```bash
+git clone <YOUR_REPOSITORY_URL>
+cd "Classroom availability finder"
 npm install
 ```
 
-## Run the server
+## Run Locally
 
 ```bash
 npm start
 ```
 
-Then open http://localhost:3000. Use `PORT=8080 npm start` (or `$env:PORT=8080` on Windows PowerShell) to change the port.
+Open `http://localhost:3000`.
 
-For auto-reload during development:
+For development with automatic reload:
 
 ```bash
 npm run dev
 ```
 
-## Run tests
+## Testing
+
+Run the automated tests:
 
 ```bash
 npm test
 ```
 
-## Lint
+Run linting:
 
 ```bash
 npm run lint
 ```
 
-## Project structure
+## Project Structure
 
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+├── src/
+│   ├── app.js
+│   ├── config.js
+│   ├── store/
+│   ├── validation/
+│   ├── routes/
+│   └── views/
+├── test/
+│   └── app.test.js
+├── server.js
+├── Dockerfile
+├── package.json
+└── README.md
 ```
-server.js                  # Entry point — starts the HTTP server
-src/
-  app.js                   # Express app factory (views, parsers, routes)
-  config.js                # commitId(): RENDER_GIT_COMMIT -> GIT_SHA -> "local"
-  store/classrooms.js      # In-memory data store + sample seed data
-  validation/classroom.js  # Add-classroom input validation
-  routes/pages.js          # HTML pages + form handlers
-  routes/api.js            # JSON API
-  views/                   # EJS templates (pages + partials)
-test/app.test.js           # node:test integration tests
-```
 
-## Later phases
+## Limitations
 
-Docker, GitHub Actions CI, and Render deployment will be added on top of this foundation.
-Automatic deplpyment test
+- Classroom data is stored in memory and resets when the server restarts.
+- The application is intended as an academic project and is not designed for production-scale use.
