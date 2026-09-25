@@ -133,7 +133,7 @@ test('GET / renders the homepage with classrooms and commit footer', async (t) =
   const html = await res.text();
   assert.match(html, /Classroom Availability Finder/);
   assert.match(html, /CS-301/);
-  assert.match(html, /Build commit:/);
+  assert.match(html, /Running commit:/);
 });
 
 test('GET /?search= filters classrooms by room number', async (t) => {
@@ -230,4 +230,41 @@ test('GET / combines availability filter with room/building search', async (t) =
   assert.doesNotMatch(html, /Lab-2/);
   assert.doesNotMatch(html, />101</);
   assert.doesNotMatch(html, />204</);
+});
+
+test('footer displays RENDER_GIT_COMMIT when set', async (t) => {
+  const original = process.env.RENDER_GIT_COMMIT;
+  process.env.RENDER_GIT_COMMIT = 'abc1234567890';
+  t.after(() => {
+    if (original === undefined) {
+      delete process.env.RENDER_GIT_COMMIT;
+    } else {
+      process.env.RENDER_GIT_COMMIT = original;
+    }
+  });
+
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/`);
+  const html = await res.text();
+  assert.match(html, /Running commit: <code>abc1234<\/code>/);
+});
+
+test('footer falls back to "local" when RENDER_GIT_COMMIT is not set', async (t) => {
+  const savedRender = process.env.RENDER_GIT_COMMIT;
+  const savedGitSha = process.env.GIT_SHA;
+  delete process.env.RENDER_GIT_COMMIT;
+  delete process.env.GIT_SHA;
+  t.after(() => {
+    if (savedRender !== undefined) process.env.RENDER_GIT_COMMIT = savedRender;
+    if (savedGitSha !== undefined) process.env.GIT_SHA = savedGitSha;
+  });
+
+  const { base, close } = await startServer();
+  t.after(close);
+
+  const res = await fetch(`${base}/`);
+  const html = await res.text();
+  assert.match(html, /Running commit: <code>local<\/code>/);
 });
